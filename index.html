@@ -1,79 +1,124 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-
   <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="Homg : high-order Geometric Multigrid using Hexahedral Finite Elements" />
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Homg by hsundar</title>
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>Homg</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
   </head>
-
   <body>
+    <div class="wrapper">
+      <header>
+        <h1 class="header">Homg</h1>
+        <p class="header">High-order Geometric Multigrid using Hexahedral Finite Elements</p>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/hsundar/homg">View on GitHub</a>
+        <ul>
+          <li class="download"><a class="buttons" href="https://github.com/hsundar/homg/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/hsundar/homg/tarball/master">Download TAR</a></li>
+          <li><a class="buttons github" href="https://github.com/hsundar/homg">View On GitHub</a></li>
+        </ul>
 
-          <h1 id="project_title">Homg</h1>
-          <h2 id="project_tagline">high-order Geometric Multigrid using Hexahedral Finite Elements</h2>
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/hsundar">hsundar</a></p>
 
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/hsundar/homg/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/hsundar/homg/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
 
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h3>
-<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
+      </header>
+      <section>
+        <h1>
+<a name="homg" class="anchor" href="#homg"><span class="octicon octicon-link"></span></a>HoMG</h1>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+<p>High-order finite-element package using hexahedral elements. The code is a
+testbed for geometric multigrid approaches for high order discretizations. The
+current implementation supports setting up a combination of $h$ and $p$
+heirarchy. The following smoothers are supported,</p>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
+<ul>
+<li>Jacobi</li>
+<li>Chebyshev-accelerated Jacobi</li>
+<li>block Jacobi</li>
+<li>Symmetric SOR </li>
+</ul><h3>
+<a name="basic-usage" class="anchor" href="#basic-usage"><span class="octicon octicon-link"></span></a>Basic Usage</h3>
+
+<p>A simple example in 2D</p>
+
+<pre><code>#!matlab
+
+% specify the coefficients
+mu = @(x,y)(1 + 1e6*( cos(2*pi*x)^2 + cos(2*pi*y)^2 ) );
+
+% create the mesh heirarchy, for a warped mesh
+% in this case we create a h+p heirarchy
+%     grid 4 --&gt; 32x32, p=4  (finest)
+%     grid 3 --&gt; 32x32, p=2      
+%     grid 2 --&gt; 32x32, p=1
+%     grid 1 --&gt; 16x16, p=1
+%     grid 0 --&gt;  8x8,  p=1  (coarsest)
+
+g = create_hexmesh_grids(2, mu, @homg.xform.shell, [1 2 4], [8 16 32]);
+
+% now solve using multigrid as the solver and the choice of smoother
+g.solve (150, 'jacobi', 3,3, g.L, g.get_u0);
+g.solve (150, 'chebyshev', 3,3, g.L, g.get_u0);
+g.solve (150, 'ssor', 2,1, g.L, g.get_u0);
+
+% or solve using CG preconditioned using multigrid
+g.solve_pcg(150, 'jacobi', 3,3, g.L, g.get_u0);
+g.solve_pcg(150, 'chebyshev', 3,3, g.L, g.get_u0);
+g.solve_pcg(150, 'ssor', 2,1, g.L, g.get_u0);
+
 </code></pre>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+<p>The 3D example is similar with a few changes in the grid setup.</p>
 
-<h3>
-<a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
+<pre><code>#!matlab
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+% specify the coefficients
+mu = @(x,y,z)(1 + 10^6*( cos(2*pi*x)^2 + cos(2*pi*y)^2 + cos(2*pi*z)^2) );
 
-<h3>
-<a name="rather-drive-stick" class="anchor" href="#rather-drive-stick"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
+% create the mesh heirarchy, for a warped mesh
+% in this case we create a h+p heirarchy
+%     grid 4 --&gt; 8x8x8, p=4  (finest)
+%     grid 3 --&gt; 8x8x8, p=2      
+%     grid 2 --&gt; 8x8x8, p=1
+%     grid 1 --&gt; 4x4x4, p=1
+%     grid 0 --&gt; 2x2x2, p=1  (coarsest)
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+g = create_hexmesh_grids(3, mu, @homg.xform.shell, [1 2 4], [2 4 8]);
+
+% now solve using multigrid as the solver and the choice of smoother
+g.solve (150, 'jacobi', 3,3, g.L, g.get_u0);
+g.solve (150, 'chebyshev', 3,3, g.L, g.get_u0);
+g.solve (150, 'ssor', 2,1, g.L, g.get_u0);
+
+% or solve using CG preconditioned using multigrid
+g.solve_pcg(150, 'jacobi', 3,3, g.L, g.get_u0);
+g.solve_pcg(150, 'chebyshev', 3,3, g.L, g.get_u0);
+g.solve_pcg(150, 'ssor', 2,1, g.L, g.get_u0);
+
+</code></pre>
 
 <h3>
 <a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
 
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+<p>Hari Sundar (<a href="https://github.com/hsundar" class="user-mention">@hsundar</a>) and Georg Stadler.</p>
 
 <h3>
 <a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
 
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+<p>Email questions or suggestions to <a href="mailto:hari@ices.utexas.edu">hari@ices.utexas.edu</a> </p>
       </section>
-    </div>
-
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Homg maintained by <a href="https://github.com/hsundar">hsundar</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      <footer>
+        <p><small>Hosted on <a href="http://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
       </footer>
     </div>
-
-    
-
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+		
   </body>
 </html>

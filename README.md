@@ -1,12 +1,14 @@
 # HoMG
 
-High-order finite-element package using hexahedral elements. Also has geometric
-multigrid built on top of it.
+High-order finite-element package using hexahedral elements. The code is a
+testbed for geometric multigrid approaches for high order discretizations. The
+current implementation supports setting up a combination of $h$ and $p$
+heirarchy. The following smoothers are supported,
+ * Jacobi
+ * Chebyshev-accelerated Jacobi
+ * block Jacobi
+ * Symmetric SOR 
 
-Initially was using ComSol for the finite element discretization. This is
-currently in the `+homg/mesh` class. The main fem implementation currently is
-in `+homg/hexmesh`. This will eventually become the `mesh` class and the old 
-ComSol dependency will be depricated. 
 
 ## Basic Usage
 

@@ -33,6 +33,8 @@
         <h1>
 <a name="homg" class="anchor" href="#homg"><span class="octicon octicon-link"></span></a>HoMG</h1>
 
+<p><img src="https://raw.github.com/hsundar/homg/gh-pages/images/warped%20mesh.png" alt="mesh"></p>
+
 <p>High-order finite-element package using hexahedral elements. The code is a
 testbed for geometric multigrid approaches for high order discretizations. The
 current implementation supports setting up a combination of $h$ and $p$
@@ -48,61 +50,59 @@ heirarchy. The following smoothers are supported,</p>
 
 <p>A simple example in 2D</p>
 
-<pre><code>#!matlab
+<div class="highlight highlight-matlab"><pre>
+<span class="c">% specify the coefficients</span>
+<span class="n">mu</span> <span class="p">=</span> <span class="p">@(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1e6</span><span class="o">*</span><span class="p">(</span> <span class="nb">cos</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="nb">pi</span><span class="o">*</span><span class="n">x</span><span class="p">)</span>^<span class="mi">2</span> <span class="o">+</span> <span class="nb">cos</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="nb">pi</span><span class="o">*</span><span class="n">y</span><span class="p">)</span>^<span class="mi">2</span> <span class="p">)</span> <span class="p">);</span>
 
-% specify the coefficients
-mu = @(x,y)(1 + 1e6*( cos(2*pi*x)^2 + cos(2*pi*y)^2 ) );
+<span class="c">% create the mesh heirarchy, for a warped mesh</span>
+<span class="c">% in this case we create a h+p heirarchy</span>
+<span class="c">%     grid 4 --&gt; 32x32, p=4  (finest)</span>
+<span class="c">%     grid 3 --&gt; 32x32, p=2      </span>
+<span class="c">%     grid 2 --&gt; 32x32, p=1</span>
+<span class="c">%     grid 1 --&gt; 16x16, p=1</span>
+<span class="c">%     grid 0 --&gt;  8x8,  p=1  (coarsest)</span>
 
-% create the mesh heirarchy, for a warped mesh
-% in this case we create a h+p heirarchy
-%     grid 4 --&gt; 32x32, p=4  (finest)
-%     grid 3 --&gt; 32x32, p=2      
-%     grid 2 --&gt; 32x32, p=1
-%     grid 1 --&gt; 16x16, p=1
-%     grid 0 --&gt;  8x8,  p=1  (coarsest)
+<span class="n">g</span> <span class="p">=</span> <span class="n">create_hexmesh_grids</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="p">@</span><span class="n">homg</span><span class="p">.</span><span class="n">xform</span><span class="p">.</span><span class="n">shell</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">8</span> <span class="mi">16</span> <span class="mi">32</span><span class="p">]);</span>
 
-g = create_hexmesh_grids(2, mu, @homg.xform.shell, [1 2 4], [8 16 32]);
+<span class="c">% now solve using multigrid as the solver and the choice of smoother</span>
+<span class="n">g</span><span class="p">.</span><span class="n">solve</span> <span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="s">'jacobi'</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">L</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">get_u0</span><span class="p">);</span>
+<span class="n">g</span><span class="p">.</span><span class="n">solve</span> <span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="s">'chebyshev'</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">L</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">get_u0</span><span class="p">);</span>
+<span class="n">g</span><span class="p">.</span><span class="n">solve</span> <span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="s">'ssor'</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">L</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">get_u0</span><span class="p">);</span>
 
-% now solve using multigrid as the solver and the choice of smoother
-g.solve (150, 'jacobi', 3,3, g.L, g.get_u0);
-g.solve (150, 'chebyshev', 3,3, g.L, g.get_u0);
-g.solve (150, 'ssor', 2,1, g.L, g.get_u0);
+<span class="c">% or solve using CG preconditioned using multigrid</span>
+<span class="n">g</span><span class="p">.</span><span class="n">solve_pcg</span><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="s">'jacobi'</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">L</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">get_u0</span><span class="p">);</span>
+<span class="n">g</span><span class="p">.</span><span class="n">solve_pcg</span><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="s">'chebyshev'</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">L</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">get_u0</span><span class="p">);</span>
+<span class="n">g</span><span class="p">.</span><span class="n">solve_pcg</span><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="s">'ssor'</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">L</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">get_u0</span><span class="p">);</span>
 
-% or solve using CG preconditioned using multigrid
-g.solve_pcg(150, 'jacobi', 3,3, g.L, g.get_u0);
-g.solve_pcg(150, 'chebyshev', 3,3, g.L, g.get_u0);
-g.solve_pcg(150, 'ssor', 2,1, g.L, g.get_u0);
-
-</code></pre>
+</pre></div>
 
 <p>The 3D example is similar with a few changes in the grid setup.</p>
 
-<pre><code>#!matlab
+<div class="highlight highlight-matlab"><pre>
+<span class="c">% specify the coefficients</span>
+<span class="n">mu</span> <span class="p">=</span> <span class="p">@(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)(</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">10</span>^<span class="mi">6</span><span class="o">*</span><span class="p">(</span> <span class="nb">cos</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="nb">pi</span><span class="o">*</span><span class="n">x</span><span class="p">)</span>^<span class="mi">2</span> <span class="o">+</span> <span class="nb">cos</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="nb">pi</span><span class="o">*</span><span class="n">y</span><span class="p">)</span>^<span class="mi">2</span> <span class="o">+</span> <span class="nb">cos</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="nb">pi</span><span class="o">*</span><span class="n">z</span><span class="p">)</span>^<span class="mi">2</span><span class="p">)</span> <span class="p">);</span>
 
-% specify the coefficients
-mu = @(x,y,z)(1 + 10^6*( cos(2*pi*x)^2 + cos(2*pi*y)^2 + cos(2*pi*z)^2) );
+<span class="c">% create the mesh heirarchy, for a warped mesh</span>
+<span class="c">% in this case we create a h+p heirarchy</span>
+<span class="c">%     grid 4 --&gt; 8x8x8, p=4  (finest)</span>
+<span class="c">%     grid 3 --&gt; 8x8x8, p=2      </span>
+<span class="c">%     grid 2 --&gt; 8x8x8, p=1</span>
+<span class="c">%     grid 1 --&gt; 4x4x4, p=1</span>
+<span class="c">%     grid 0 --&gt; 2x2x2, p=1  (coarsest)</span>
 
-% create the mesh heirarchy, for a warped mesh
-% in this case we create a h+p heirarchy
-%     grid 4 --&gt; 8x8x8, p=4  (finest)
-%     grid 3 --&gt; 8x8x8, p=2      
-%     grid 2 --&gt; 8x8x8, p=1
-%     grid 1 --&gt; 4x4x4, p=1
-%     grid 0 --&gt; 2x2x2, p=1  (coarsest)
+<span class="n">g</span> <span class="p">=</span> <span class="n">create_hexmesh_grids</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="p">@</span><span class="n">homg</span><span class="p">.</span><span class="n">xform</span><span class="p">.</span><span class="n">shell</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span> <span class="mi">4</span> <span class="mi">8</span><span class="p">]);</span>
 
-g = create_hexmesh_grids(3, mu, @homg.xform.shell, [1 2 4], [2 4 8]);
+<span class="c">% now solve using multigrid as the solver and the choice of smoother</span>
+<span class="n">g</span><span class="p">.</span><span class="n">solve</span> <span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="s">'jacobi'</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">L</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">get_u0</span><span class="p">);</span>
+<span class="n">g</span><span class="p">.</span><span class="n">solve</span> <span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="s">'chebyshev'</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">L</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">get_u0</span><span class="p">);</span>
+<span class="n">g</span><span class="p">.</span><span class="n">solve</span> <span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="s">'ssor'</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">L</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">get_u0</span><span class="p">);</span>
 
-% now solve using multigrid as the solver and the choice of smoother
-g.solve (150, 'jacobi', 3,3, g.L, g.get_u0);
-g.solve (150, 'chebyshev', 3,3, g.L, g.get_u0);
-g.solve (150, 'ssor', 2,1, g.L, g.get_u0);
+<span class="c">% or solve using CG preconditioned using multigrid</span>
+<span class="n">g</span><span class="p">.</span><span class="n">solve_pcg</span><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="s">'jacobi'</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">L</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">get_u0</span><span class="p">);</span>
+<span class="n">g</span><span class="p">.</span><span class="n">solve_pcg</span><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="s">'chebyshev'</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">L</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">get_u0</span><span class="p">);</span>
+<span class="n">g</span><span class="p">.</span><span class="n">solve_pcg</span><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="s">'ssor'</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">L</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">get_u0</span><span class="p">);</span>
 
-% or solve using CG preconditioned using multigrid
-g.solve_pcg(150, 'jacobi', 3,3, g.L, g.get_u0);
-g.solve_pcg(150, 'chebyshev', 3,3, g.L, g.get_u0);
-g.solve_pcg(150, 'ssor', 2,1, g.L, g.get_u0);
-
-</code></pre>
+</pre></div>
 
 <h3>
 <a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>

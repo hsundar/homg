@@ -9,12 +9,20 @@ heirarchy. The following smoothers are supported,
  * block Jacobi
  * Symmetric SOR 
 
+[Project Page](http://hsundar.github.io/homg/)
+
+Details about the implementation and a comparison of the different methods can
+be found in   
+   
+[Comparison of Multigrid Algorithms for High-order Continuous Finite Element
+Discretizations](http://arxiv.org/pdf/1402.5938v1) _Hari Sundar, Georg Stadler, George Biros_
+[arXiv](http://arxiv.org/abs/1402.5938)
+
 
 ## Basic Usage
 
 A simple example in 2D
-```
-#!matlab
+```matlab
 
 % specify the coefficients
 mu = @(x,y)(1 + 1e6*( cos(2*pi*x)^2 + cos(2*pi*y)^2 ) );
@@ -42,8 +50,7 @@ g.solve_pcg(150, 'ssor', 2,1, g.L, g.get_u0);
 ```
 The 3D example is similar with a few changes in the grid setup.
 
-```
-#!matlab
+```matlab
 
 % specify the coefficients
 mu = @(x,y,z)(1 + 10^6*( cos(2*pi*x)^2 + cos(2*pi*y)^2 + cos(2*pi*z)^2) );
@@ -72,8 +79,8 @@ g.solve_pcg(150, 'ssor', 2,1, g.L, g.get_u0);
 
 Using low-order preconditioning for high-order operator in CG method
 
-```
-#!matlab
+```matlab
+
 % specify the coefficients for a 2D example
 mu = @(x,y)(1 + 10^6*( cos(2*pi*x)^2 + cos(2*pi*y)^2));
 

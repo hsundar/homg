@@ -4,6 +4,7 @@ classdef grid < handle
   
   properties
     level
+    is_finest
     eig_max
     eig_min
     
@@ -18,10 +19,10 @@ classdef grid < handle
     sor_omega
     
     smoother
-		
+    linear_smoother
     K
     L
-    
+    K_lin
     Boundary
     
     M
@@ -105,7 +106,14 @@ classdef grid < handle
         end
       end      
     end
-    
+		function use_linearized_smoothers(grid)
+			grid.linear_smoother = true;
+			[grid.K_lin, ~]  =  grid.Mesh.assemble_poisson_linearized (grid.Mesh.order);
+			if (~ isempty(grid.Coarse) )
+				grid.Coarse.use_linearized_smoothers();
+			end
+		end
+
 		function set_stiffness(grid, K)
 			grid.K = K;
 		end

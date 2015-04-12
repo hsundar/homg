@@ -13,6 +13,10 @@ heirarchy. The following smoothers are supported,
 
 Details about the implementation and a comparison of the different methods can
 be found in   
+
+[Comparison of multigrid algorithms for high-order continuous finite element discretizations](http://onlinelibrary.wiley.com/doi/10.1002/nla.1979/abstract), _Hari Sundar, Georg Stadler, George Biros_  Numer. Linear Algebra Appl., doi: [10.1002/nla.1979](http://dx.doi.org/10.1002/nla.1979).
+
+or
    
 [Comparison of Multigrid Algorithms for High-order Continuous Finite Element
 Discretizations](http://arxiv.org/pdf/1402.5938v1) _Hari Sundar, Georg Stadler, George Biros_

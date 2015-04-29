@@ -35,8 +35,8 @@
 
 <p>High-order finite-element package using hexahedral elements. The code is a
 testbed for geometric multigrid approaches for high order discretizations. The
-current implementation supports setting up a combination of $h$ and $p$
-heirarchy. The following smoothers are supported,</p>
+current implementation supports setting up a combination of <em>h</em> and <em>p</em>
+hierarchy. The following smoothers are supported,</p>
 
 <ul>
 <li>Jacobi</li>
@@ -44,8 +44,6 @@ heirarchy. The following smoothers are supported,</p>
 <li>block Jacobi</li>
 <li>Symmetric SOR </li>
 </ul>
-
-<p><a href="http://hsundar.github.io/homg/">Project Page</a></p>
 
 <p>Details about the implementation and a comparison of the different methods can
 be found in   </p>
@@ -85,8 +83,7 @@ g.solve (<span class="pl-c1">150</span>, <span class="pl-s"><span class="pl-pds"
 <span class="pl-c">% or solve using CG preconditioned using multigrid</span>
 g.solve_pcg(<span class="pl-c1">150</span>, <span class="pl-s"><span class="pl-pds">'</span>jacobi<span class="pl-pds">'</span></span>, <span class="pl-c1">3</span>,<span class="pl-c1">3</span>, g.L, g.get_u0);
 g.solve_pcg(<span class="pl-c1">150</span>, <span class="pl-s"><span class="pl-pds">'</span>chebyshev<span class="pl-pds">'</span></span>, <span class="pl-c1">3</span>,<span class="pl-c1">3</span>, g.L, g.get_u0);
-g.solve_pcg(<span class="pl-c1">150</span>, <span class="pl-s"><span class="pl-pds">'</span>ssor<span class="pl-pds">'</span></span>, <span class="pl-c1">2</span>,<span class="pl-c1">1</span>, g.L, g.get_u0);
-</pre></div>
+g.solve_pcg(<span class="pl-c1">150</span>, <span class="pl-s"><span class="pl-pds">'</span>ssor<span class="pl-pds">'</span></span>, <span class="pl-c1">2</span>,<span class="pl-c1">1</span>, g.L, g.get_u0);</pre></div>
 
 <p>The 3D example is similar with a few changes in the grid setup.</p>
 
